@@ -8,16 +8,23 @@ interface ISong {
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
     context.log('HTTP trigger function processed a request.');
-    const name = (req.query.name || req.body?.name);
+    const isPost = req.method === 'POST';
+    const name: string | undefined = (req.query.name || req.body?.name);
+    if (isPost && !name) {
+        context.res = {
+            status: 400,
+            body: 'Please pass a name on the query string or in the request body'
+        };
+        return;
+    }
 
     const dBService = new DBService();
     try {
         await dBService.connect();
-        const result = await dBService.query<ISong>(`
-        INSERT INTO Songs (name)
-        VALUES ('${name}');
-        SELECT * FROM Songs;`);
-        
+        if (isPost)
+            await dBService.query(`INSERT INTO Songs (name) VALUES ('${name}');`);
+
+        const result = await dBService.query<ISong>(`SELECT * FROM Songs;`); 
         context.res = {
             // status: 200, /* Defaults to 200 */
             body: result.recordset

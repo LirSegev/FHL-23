@@ -4,14 +4,29 @@ export class DBService {
     private connectionPool: sql.ConnectionPool;
 
     public async connect() {
-        this.connectionPool = await sql.connect(process.env.dbConnectionString);
+        try {
+            this.connectionPool = await sql.connect(process.env.dbConnectionString);
+        } catch (err) {
+            console.error('Error connecting to DB', err);
+            throw err;
+        }
     }
 
     public cleanup() {
-        return this.connectionPool?.close();
+        try {
+            return this.connectionPool?.close();
+        } catch (err) {
+            console.error('Error closing DB connection', err);
+            throw err;
+        }
     }
 
     public async query<T>(query: string) {
-        return this.connectionPool.request().query<T>(query);
+        try {
+            return this.connectionPool.request().query<T>(query);
+        } catch (err) {
+            console.error('Error querying DB', err);
+            throw err;
+        }
     }
 }

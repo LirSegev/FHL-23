@@ -11,19 +11,24 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     const name = (req.query.name || req.body?.name);
 
     const dBService = new DBService();
-    await dBService.connect();
-    const result = await dBService.query<ISong>(`
-    INSERT INTO Songs (name)
-    VALUES ('${name}');
-    SELECT * FROM Songs;`);
-
+    try {
+        await dBService.connect();
+        const result = await dBService.query<ISong>(`
+        INSERT INTO Songs (name)
+        VALUES ('${name}');
+        SELECT * FROM Songs;`);
+        
+        context.res = {
+            // status: 200, /* Defaults to 200 */
+            body: result.recordset
+        };
+    } catch(err) {
+        context.res = {
+            status: 500,
+            body: err
+        };
+    }
     await dBService.cleanup();
-
-    context.res = {
-        // status: 200, /* Defaults to 200 */
-        body: result.recordset
-    };
-
 };
 
 export default httpTrigger;

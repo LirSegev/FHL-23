@@ -8,7 +8,7 @@ interface ISong {
   name: string;
 }
 
-const url = 'https://fhl-23-function-app.azurewebsites.net/api/generatePlaylist'
+const url = '/api/generatePlaylist'
 function App() {
   const [songs, setSongs] = useState<ISong[]>([])
   useEffect(() => {
